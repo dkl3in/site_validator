@@ -5,6 +5,8 @@ require_relative 'spec_helper'
 describe SiteValidator::Sitemap do
   before(:each) do
     @sitemap                              = SiteValidator::Sitemap.new('http://ryanair.com/sitemap.xml')
+    @sitemap_dirty                        = SiteValidator::Sitemap.new('http://example.com/sitemap_dirty.xml')
+    @sitemap_html_dirty                   = SiteValidator::Sitemap.new('http://example.com/dirty')
     @sitemap_html                         = SiteValidator::Sitemap.new('http://guides.rubyonrails.org')
     @sitemap_no_links                     = SiteValidator::Sitemap.new('http://zigotica.com')
     @sitemap_with_trailing_slash          = SiteValidator::Sitemap.new('http://eparreno.com')
@@ -30,6 +32,26 @@ describe SiteValidator::Sitemap do
       @sitemap.pages[0].url.should == 'http://www.ryanair.com/es/'
       @sitemap.pages[1].url.should == 'http://www.ryanair.com/es/careers/job'
       @sitemap.pages[2].url.should == 'http://www.ryanair.com/es/about'
+    end
+
+    it "should not crash when encountering invalid locs on an xml sitemap" do
+      expect {
+        @sitemap_dirty.pages.length.should == 2
+      }.to_not raise_error
+
+      @sitemap_dirty.pages[0].url.should == 'http://www.ryanair.com/es/'
+      @sitemap_dirty.pages[1].url.should == 'http://www.ryanair.com/es/careers/job'
+    end
+
+    it "should not crash when encountering invalid hrefs on an html page" do
+      expect {
+        @sitemap_html_dirty.pages.length.should == 4
+      }.to_not raise_error
+
+      @sitemap_html_dirty.pages[0].url.should == 'http://example.com/dirty'
+      @sitemap_html_dirty.pages[1].url.should == 'http://example.com/'
+      @sitemap_html_dirty.pages[2].url.should == 'http://example.com/faqs'
+      @sitemap_html_dirty.pages[3].url.should == 'http://example.com/contact'
     end
 
     it "should get pages from the sample guides.rubyonrails.org site" do
@@ -74,7 +96,7 @@ describe SiteValidator::Sitemap do
         @sitemap_with_safe_redirect.pages
       }.to_not raise_error
 
-      @sitemap_with_safe_redirect.pages.length.should == 37
+      @sitemap_with_safe_redirect.pages.length.should == 36
     end
 
     it "should follow unsafe (https => http) redirects" do
@@ -161,6 +183,11 @@ describe SiteValidator::Sitemap do
       it "should not include protocol-relative link to another domain" do
         @sitemap_with_protocol_relative.pages.map {|p| p.url}.should_not include 'http://yahoo.com'
       end
+    end
+
+    it "should be able to limit the number of pages" do
+      sitemap = SiteValidator::Sitemap.new('http://guides.rubyonrails.org', 10)
+      sitemap.pages.length.should == 10
     end
   end
 

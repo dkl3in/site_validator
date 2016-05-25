@@ -2,24 +2,23 @@
 
 require 'nokogiri'
 require 'metainspector'
-require 'timeout'
 
 module SiteValidator
   ##
   # A sitemap has an URL, and holds a collection of pages to be validated
   #
   class Sitemap
-    attr_accessor :url, :timeout
+    attr_accessor :url, :max_pages
 
-    def initialize(url, timeout = 20)
-      @url      = url
-      @timeout  = timeout
+    def initialize(url, max_pages = 100)
+      @url       = url
+      @max_pages = max_pages
     end
 
     ##
     # Returns the first 250 unique URLs from the sitemap
     def pages
-      @pages ||= pages_in_sitemap.uniq {|p| p.url}[0..249]
+      @pages ||= pages_in_sitemap.uniq {|p| p.url}[0..max_pages-1]
     end
 
     ##
@@ -52,12 +51,13 @@ module SiteValidator
     # to absolute links, remove anchors from links, include the sitemap url, and exclude links that don't
     # seem to point to HTML (like images, multimedia, text, javascript...)
     def pages_in_sitemap
-      pages = xml_locations.select {|loc| looks_like_html?(loc.text)}.map {|loc| SiteValidator::Page.new(loc.text)}
+      pages = xml_locations.select {|loc| looks_like_html?(loc.text.strip)}.map {|loc| SiteValidator::Page.new(loc.text.strip)}
+
       if pages.empty?
-        m     = MetaInspector.new(url, :timeout => timeout, :allow_redirections => :all)
+        m     = scraped_doc
         links = [m.url]
 
-        m.internal_links.select {|l| looks_like_html?(l)}.map {|l| l.split('#')[0]}.uniq.each do |link|
+        m.links.internal.select {|l| looks_like_html?(l)}.map {|l| l.split('#')[0]}.uniq.each do |link|
           if link[-1,1] == "/"
             links << link unless (links.include?(link) || links.include?(link.chop))
           else
@@ -78,14 +78,22 @@ module SiteValidator
       extension = u.path.split(".").last  if u.path
 
       (scheme =~ /http[s]?/i) && (extension !~ /gif|jpg|jpeg|png|tiff|bmp|txt|pdf|mobi|epub|doc|rtf|xml|xls|csv|wav|mp3|ogg|zip|rar|tar|gz/i)
+    rescue URI::InvalidURIError
+      false
     end
 
     def xml_locations
       Nokogiri::XML(doc).css('loc')
     end
 
+    def scraped_doc
+      @scraped_doc ||= MetaInspector.new(url, headers: {'User-Agent'      => SiteValidator::USER_AGENT,
+                                                        'Accept-Encoding' => 'none' },
+                                              faraday_options: { ssl: { verify: false } })
+    end
+
     def doc
-      @doc ||= open(url, :allow_redirections => :all)
+      @doc ||= scraped_doc.to_s
     end
   end
 end

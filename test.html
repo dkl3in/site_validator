@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Site Validator report for <%= @url %></title>
+    <title>Site Validator report for http://www.jucy.co.nz/</title>
 
     <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
     <style type="text/css">
@@ -118,110 +118,26 @@
 
     <div class="container">
 
-      <h1>Site validation for <a href='<%= @url %>'><%= @url %></a></h1>
+      <h1>Site validation for <a href='http://www.jucy.co.nz/'>http://www.jucy.co.nz/</a></h1>
 
       <ul class="nav nav-tabs">
         <li class="active"><a href="#urls">List of URLs</a></li>
-        <li><a href="#errors"><%= errors.length %> HTML errors</a></li>
-        <li><a href="#warnings"><%= warnings.length %> HTML warnings</a></li>
+        <li><a href="#errors">0 HTML errors</a></li>
+        <li><a href="#warnings">0 HTML warnings</a></li>
       </ul>
 
       <div class="tab-content">
         <div class="tab-pane active" id="urls">
-          <% processed_pages = pages.select{|p| !p.exception} %>
-          <% if processed_pages.size > 0 %>
-            <div class="accordion">
-              <% processed_pages.each do |page| %>
-                <h3>
-                  <%= page.url %>
-                  <div class="pull-right">
-                    <span class="label label-danger"><%= "#{page.errors.length} ERRORS" %></span>
-                    <span class="label label-warning"><%= "#{page.warnings.length} WARNINGS" %></span>
-                  </div>
-                </h3>
-
-                <div style="padding:10px;">
-                  <div class="accordion">
-                    <% page.errors.sort_by {|e| e.line.to_i}.each do |error| %>
-                      <h3>
-                        <span class="label label-danger">ERROR</span>
-                        <%= CGI::escapeHTML(error.text.capitalize) %>
-                      </h3>
-
-                      <div>
-                        <% if error.line && error.col %>
-                          <span class="coordinates label">
-                            LINE <%= error.line %>, COL <%= error.col %>
-                          </span>
-                        <% end %>
-
-                        <% if error.source && error.source.strip.length > 0 %>
-                          <pre><code class="html"><%= error.source.strip %></code></pre>
-                        <% end %>
-
-                        <% if error.explanation && error.explanation.strip.length > 0 %>
-                          <div class="w3c_explanation"><%= error.explanation.strip %></div>
-                        <% end %>
-                      </div>
-                    <% end %>
-
-                    <% page.warnings.sort_by {|w| w.line.to_i}.each do |warning| %>
-                      <h3>
-                        <span class="label label-warning">WARNING</span>
-                        <%= CGI::escapeHTML(warning.text.capitalize) %>
-                      </h3>
-
-                      <div>
-                        <% if warning.line && warning.col %>
-                          <span class="coordinates label">
-                            LINE <%= warning.line %>, COL <%= warning.col %>
-                          </span>
-                        <% end %>
-
-                        <% if warning.source && warning.source.strip.length > 0 %>
-                          <pre><code class="html"><%= warning.source.strip %></code></pre>
-                        <% end %>
-
-                        <% if warning.explanation && warning.explanation.strip.length > 0 %>
-                          <div class="w3c_explanation"><%= warning.explanation.strip %></div>
-                        <% end %>
-                      </div>
-                    <% end %>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          <% end %>
+          
+          
         </div>
 
         <div class="tab-pane" id="errors">
-          <% if errors.length > 0 %>
-            <div class="accordion">
-            <% errors.group_by {|e| e.text}.sort_by {|t, e| e.length}.reverse.each do |text, errors| %>
-              <h3><span class="label label-danger"><%= errors.length %></span> <%= CGI::escapeHTML(text.capitalize) %></h3>
-              <div>
-                <% if errors.first.explanation && errors.first.explanation.strip.length > 0 %>
-                  <div class="w3c_explanation"><%= errors.first.explanation.strip %></div>
-                <% end %>
-              </div>
-            <% end %>
-            </div>
-          <% end %>
+          
         </div>
 
         <div class="tab-pane" id="warnings">
-          <% if warnings.length > 0 %>
-            <div class="accordion">
-            <% warnings.group_by {|w| w.text}.sort_by {|t, w| w.length}.reverse.each do |text, warnings| %>
-              <h3><span class="label label-warning"><%= warnings.length %></span> <%= CGI::escapeHTML(text.capitalize) %></h3>
-              <div>
-                <% if warnings.first.explanation && warnings.first.explanation.strip.length > 0 %>
-                  <div class="w3c_explanation"><%= warnings.first.explanation.strip %></div>
-                <% end %>
-              </div>
-            <% end %>
-            </div>
-          <% end %>
+          
         </div>
       </div>
 

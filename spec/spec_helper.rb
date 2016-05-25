@@ -7,6 +7,8 @@ require 'fakeweb'
 
 $samples_dir = File.dirname(__FILE__) + '/samples'
 FakeWeb.register_uri(:get, "http://ryanair.com/sitemap.xml", :response => open("#{$samples_dir}/sitemap.xml").read)
+FakeWeb.register_uri(:get, "http://example.com/sitemap_dirty.xml", :response => open("#{$samples_dir}/sitemap_dirty.xml").read)
+FakeWeb.register_uri(:get, "http://example.com/dirty", :response => open("#{$samples_dir}/dirty.html").read)
 FakeWeb.register_uri(:get, "http://guides.rubyonrails.org", :response => open("#{$samples_dir}/guides.rubyonrails.org.html").read)
 FakeWeb.register_uri(:get, "http://eparreno.com", :response => open("#{$samples_dir}/eparreno.com.html").read)
 FakeWeb.register_uri(:get, "http://www.eparreno.com", :response => open("#{$samples_dir}/eparreno.com.html").read)
@@ -37,15 +39,15 @@ def stubbed_validator_results(with_errors=true, with_warnings=true)
   fake_validator = SiteValidator::MockedValidator.new
 
   if with_errors
-    fake_validator.add_error('25', '92', message_text('25'))
-    fake_validator.add_error('325', '92', message_text('325'))
-    fake_validator.add_error('325', '224', message_text('325'))
+    fake_validator.add_error('25',  '92',   '22', message_text('25'),   'a code snippet for line 92',         "an explanation for error 25 <p class='helpwanted'><a href='#'>feedback</a></p>")
+    fake_validator.add_error('325', '92',   '22', message_text('325'),  'another code snippet for line 92',   "an explanation for error 325 <p class='helpwanted'><a href='#'>feedback</a></p>")
+    fake_validator.add_error('325', '224',  '17', message_text('325'),  'another code snippet for line 325',  "an explanation for error 325 <p class='helpwanted'><a href='#'>feedback</a></p>")
   end
 
   if with_warnings
-    fake_validator.add_warning('338', '92', message_text('338'))
-    fake_validator.add_warning('247', '112', message_text('247'))
-    fake_validator.add_warning('247', '202', message_text('247'))
+    fake_validator.add_warning('338', '92',   '22', message_text('338'), 'a code snippet for line 338',       "an explanation for warning 338 <p class='helpwanted'><a href='#'>feedback</a></p>")
+    fake_validator.add_warning('247', '112',  '18', message_text('247'), 'another code snippet for line 247', "an explanation for warning 247 <p class='helpwanted'><a href='#'>feedback</a></p>")
+    fake_validator.add_warning('247', '202',  '47', message_text('247'), 'another code snippet for line 247', "an explanation for warning 247 <p class='helpwanted'><a href='#'>feedback</a></p>")
   end
 
   fake_validator
